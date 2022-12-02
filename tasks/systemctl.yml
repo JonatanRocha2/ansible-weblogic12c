@@ -1,0 +1,36 @@
+---
+- name: Copia templates quando tipo de instalacao for 'unico'
+  template:
+      src: templates/{{ item.src }}
+      dest: "{{ wls_systemd }}/{{ item.dest }}"
+      owner: "{{ wls_user }}"
+      group: "{{ wls_group }}"
+      mode: 0750
+  with_items:
+      - { src: systemd-admin-server.service.j2, dest: adminserver.service }
+      - { src: systemd-nodemanager.service.j2, dest: nodemanager.service}
+  when: tipo == "unico"
+
+- name: Copia templates do adminserver quando tipo de instalacao for 'distribuido'
+  template:
+      src: templates/systemd-admin-server.service.j2
+      dest: "{{ wls_systemd }}/adminserver.service"
+      owner: "{{ wls_user }}"
+      group: "{{ wls_group }}"
+      mode: 0750
+      tags: console
+  when: tipo == "distribuido"
+
+- name: Copia template do nodemanager quando tipo de instalacao for 'distribuido'
+  template:
+      src: templates/systemd-nodemanager.service.j2
+      dest: "{{ wls_systemd }}/nodemanager.service"
+      owner: "{{ wls_user }}"
+      group: "{{ wls_group }}"
+      mode: 0750
+      tags: node
+  when: tipo == "distribuido"
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes

@@ -1,0 +1,5 @@
+---
+- name: 2.3.Configura variaveis de ambiente - Node
+  template: src=templates/etc_profile.d_weblogic_node_env_vars.sh.j2
+            dest=/etc/profile.d/weblogic_env_vars.sh
+            owner={{ wls_user }} group={{ wls_group }} mode=0644

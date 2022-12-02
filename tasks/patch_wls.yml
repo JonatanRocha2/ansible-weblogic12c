@@ -1,0 +1,22 @@
+---
+- name: Para o Weblogic Server
+  shell: "{{ wls_stop_weblogic }}"
+  become: true
+  become_user: "{{ wls_user }}"
+  ignore_errors: True
+  tags: console
+
+- name: Cria a pasta PATCH
+  file: path={{ wls_patch_home }} state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: Descompacta os patchs
+  unarchive: src={{ item }}
+             dest={{ wls_patch_home }}
+             owner={{ wls_user }} group={{ wls_group }}
+  with_fileglob: "{{ wls_patchs }}"
+
+- name: Instala os patchs
+  shell: "{{ wls_home }}/OPatch/opatch napply -silent {{ wls_patch_home }}"
+  become: true
+  become_user: "{{ wls_user }}"

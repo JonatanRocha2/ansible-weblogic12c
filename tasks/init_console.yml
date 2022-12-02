@@ -1,0 +1,5 @@
+---
+- name: Configura a inicializacao do admin console
+  template: src=templates/weblogic-console.conf.j2
+            dest=/etc/init/weblogic-console.conf
+            owner={{ wls_user }} group={{ wls_group }} mode=0644

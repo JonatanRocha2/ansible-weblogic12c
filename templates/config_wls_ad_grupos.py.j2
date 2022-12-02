@@ -1,0 +1,11 @@
+connect('{{ wls_console_user }}','{{ wls_password }}','{{ wls_console_host }}:{{ wls_console_port }}')
+
+cd('/SecurityConfiguration/{{ wls_domain_name }}/Realms/myrealm/RoleMappers/XACMLRoleMapper')
+cmo.setRoleExpression('','Admin','Grp(WeblogicAdmins)|Grp(WeblogiHomcAdmins)|Grp(Operadores)|Grp(Administrators)')
+cd('/')
+getSecurityConfiguration=cmo.getSecurityConfiguration().getDefaultRealm().lookupAuthenticationProvider("DefaultAuthenticator")
+getSecurityConfiguration.createUser('viewer','weblogic1','Usuario para visualizacao')
+getSecurityConfiguration.addMemberToGroup('Monitors','viewer')
+
+shutdown('AdminServer','Server', ignoreSessions='true')
+exit()

@@ -1,0 +1,12 @@
+---
+
+# O uso desta template será para configurar um novo nó gerenciado (node manager).
+
+- name: Gera template do weblogic
+  shell: "{{ wls_home }}/wlserver/common/bin/pack.sh -managed=true -domain={{ wls_domain_home }} -template={{ wls_home }}/template_{{ wls_domain_name }}.jar -template_name=\"Template01\""
+  become: true
+  become_user: "{{ wls_user }}"
+
+
+- name: Copia template weblogic para o ansible
+  fetch: src={{ wls_home }}/template_{{ wls_domain_name }}.jar dest=files/template_{{ wls_domain_name }}.jar flat=yes

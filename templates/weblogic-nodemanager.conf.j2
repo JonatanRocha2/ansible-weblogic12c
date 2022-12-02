@@ -1,0 +1,5 @@
+start on runlevel [345]
+stop on runlevel [016]
+respawn
+
+exec /bin/su - oracle -- {{ wls_start_nodemanager }}

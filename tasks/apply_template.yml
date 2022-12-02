@@ -1,0 +1,35 @@
+---
+# O uso desta template será para configurar um novo nó gerenciado (node manager).
+
+- name: Copia template
+  copy: src=files/template_{{ wls_domain_name }}.jar
+        dest={{ wls_download_path }}/template_{{ wls_domain_name }}.jar
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: Aplica template ao host
+  shell: "{{ wls_home }}/wlserver/common/bin/unpack.sh -template={{ wls_download_path }}/template_{{ wls_domain_name }}.jar -domain={{ wls_domain_home }"
+  become: true
+  become_user: "{{ wls_user }}"
+
+- name: Configura o arquivo nodemanager.domains
+  lineinfile: dest="{{ wls_domain_home }}/nodemanager/nodemanager.domains"
+              line="{{ wls_domain_name }}={{ wls_domain_home }}"
+              owner={{ wls_user }} group={{ wls_group }}
+              create=yes state=present
+
+- name: Cria a pasta security no node manager
+  file: path="{{ wls_domain_home }}/nodemanager/security"
+        state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+        mode=0750 recurse=yes
+
+- name: Copia  a chave de identificacao do java para o node manager
+  copy: src="{{ wls_domain_home }}/security/DemoIdentity.jks"
+        dest="{{ wls_domain_home }}/nodemanager/security/DemoIdentity.jks"
+        owner={{ wls_user }} group={{ wls_group }} mode=0640
+        remote_src=True
+
+- name: Copia o arquivo nodemanager.properties
+  template: src=templates/nodemanager.properties.j2
+            dest={{ wls_domain_home }}/nodemanager/nodemanager.properties
+            owner={{ wls_user }} group={{ wls_group }} mode=0640 force=true

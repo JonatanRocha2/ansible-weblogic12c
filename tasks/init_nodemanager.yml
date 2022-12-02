@@ -1,0 +1,5 @@
+---
+- name: 11.1.Configura a inicializacao do Node Manager
+  template: src=templates/weblogic-nodemanager.conf.j2
+            dest=/etc/init.d/weblogic-nodemanager.conf
+            owner={{ wls_user }} group={{ wls_group }} mode=0644

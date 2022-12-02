@@ -1,0 +1,51 @@
+---
+# - name: 4.1.Instala os pacotes do SO
+#   yum: name={{ item }} state=present
+#   with_items:
+#     - "{{ rpm_packages }}"
+#   become: true
+
+- name: 4.3.Cria o diretorio de Stage
+  file: path={{ wls_download_path }} state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.4.Checa o arquivo de instalação
+  stat: path={{ wls_download_path }}/{{ wls_installation_file }}
+  register: instalador
+
+- name: 4.5.Download do instalador
+  get_url: url={{ wls_installation_file_url }}
+           dest={{ wls_download_path }}
+           owner={{ wls_user }} group={{ wls_group }}
+  when: not instalador.stat.exists
+
+- name: 4.6.Copia install.file
+  template: src=templates/install.file.j2
+            dest={{ wls_download_path }}/install.file
+            owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.7.Cria a pasta home do WLS
+  file: path={{ wls_home }} state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.8.Copia oraInst.loc
+  template: src=templates/oraInst.loc.j2
+            dest={{ wls_orainst }}
+            owner={{ wls_user }} group={{ wls_group }} mode=0640
+
+- name: 4.9.Cria a pasta /u02
+  file: path=/u02 state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.10.Cria a pasta temporaria do instalador
+  file: path={{ wls_temp }} state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.11.Cria a pasta oraInventory
+  file: path={{ wls_inventory }} state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: 4.12.Instala o WLS
+  shell: "java -Djava.io.tmpdir={{ wls_temp }} -jar {{ wls_download_path }}/{{ wls_installation_file }} -silent -responseFile {{ wls_download_path }}/install.file -invPtrLoc {{ wls_orainst }} -jreLoc {{ java_home }}"
+  become: true
+  become_user: "{{ wls_user }}"

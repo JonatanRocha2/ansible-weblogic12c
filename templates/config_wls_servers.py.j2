@@ -1,0 +1,63 @@
+connect('{{ wls_console_user }}','{{ wls_password }}','{{ wls_console_host }}:{{ wls_console_port }}')
+
+edit()
+startEdit()
+cd('/WebAppContainer/{{ wls_domain_name }}')
+cmo.setWeblogicPluginEnabled(true)
+cmo.setXPoweredByHeaderLevel('NONE')
+
+cd('/RestfulManagementServices/{{ wls_domain_name }}')
+cmo.setEnabled(true)
+
+cd('/Log/{{ wls_domain_name }}')
+cmo.setRotationType('none')
+
+cd('/')
+cmo.createUnixMachine('{{ ansible_hostname }}')
+
+cd('/Machines/{{ ansible_hostname }}/NodeManager/{{ ansible_hostname }}')
+cmo.setListenAddress('{{ ansible_fqdn }}')
+
+cd('/')
+cmo.createServerTemplate('ServerTemplate')
+
+cd('/ServerTemplates/ServerTemplate/OverloadProtection/ServerTemplate')
+cmo.setFailureAction('force-shutdown')
+cmo.setPanicAction('system-exit')
+cmo.createServerFailureTrigger()
+
+cd('/ServerTemplates/ServerTemplate/OverloadProtection/ServerTemplate/ServerFailureTrigger/ServerTemplate')
+cmo.setMaxStuckThreadTime(600)
+cmo.setStuckThreadCount(0)
+
+cd('/ServerTemplates/ServerTemplate')
+cmo.setMachine(getMBean('/Machines/{{ ansible_hostname }}'))
+cmo.setCluster(None)
+cmo.setMuxerClass('weblogic.socket.PosixSocketMuxer')
+cmo.setRestartIntervalSeconds(1800)
+cmo.setHealthCheckIntervalSeconds(120)
+cmo.setAutoKillIfFailed(true)
+
+cd('/ServerTemplates/ServerTemplate/ServerStart/ServerTemplate')
+cmo.setArguments('-Xms64m -Xmx192m -XX:MaxNewSize=64m -XX:MaxPermSize=256m -Xss256k')
+
+cd('/ServerTemplates/ServerTemplate/Log/ServerTemplate')
+cmo.setRotationType('none')
+
+cd('/ServerTemplates/ServerTemplate/WebServer/ServerTemplate/WebServerLog/ServerTemplate')
+cmo.setRotationType('none')
+
+cd('/ServerTemplates/ServerTemplate/DataSource/ServerTemplate/DataSourceLogFile/ServerTemplate')
+cmo.setRotationType('none')
+
+cd('/Servers/AdminServer/Log/AdminServer')
+cmo.setRotationType('none')
+
+cd('/Servers/AdminServer/WebServer/AdminServer/WebServerLog/AdminServer')
+cmo.setRotationType('none')
+
+cd('/Servers/AdminServer/DataSource/AdminServer/DataSourceLogFile/AdminServer')
+cmo.setRotationType('none')
+
+activate()
+exit()

@@ -1,0 +1,90 @@
+---
+- name: Instala e configura WLS 12c
+  hosts: "{{ hosts }}"
+
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+
+    - name: Checa variaveis necessarias
+      fail: msg="Necessario definir a variavel 'ambiente' na linha de comando"
+      when: ambiente is not defined
+      tags: always
+
+    - name: Inclui tarefas de definicao de variaveis por ambiente
+      include: tasks/setup_vars.yml
+      tags: always
+
+    - name: Check WLS installation
+      stat: path={{ wls_home }}/wlserver/common/bin/wlst.sh
+      register: wls
+      tags: always
+
+    - name: Configuracoes de SO
+      include: tasks/system_configs.yml
+      tags: always
+
+    - name: Configuracao do logrotate
+      include: tasks/logrotate.yml
+      tags: always
+
+    - name: Instala o weblogic
+      include: tasks/install_wls.yml
+      when: not wls.stat.exists
+      tags: always
+
+    - name: Verifica se existe um dominio criado
+      stat: path="{{ wls_domain_home }}"
+      register: domain
+      when: wls_domain_name is defined
+      tags: always
+
+    - name: Configura systemctl
+      include: tasks/systemctl.yml
+      tags: always
+
+    - name: Cria um dominio
+      include: tasks/create_wls_domain.yml
+      when: not domain.stat.exists and wls_domain_name is defined
+      tags: console
+
+    - name: Configura dominio
+      include: tasks/config_domain.yml
+      tags: console
+
+    - name: Configura node manager na console
+      include: tasks/node_manager.yml
+      when: tipo == "unico"
+      tags: console
+
+    - name: Aplica patch
+      include: tasks/patch_wls.yml
+      tags: always
+
+    - name: Cria template do dominio
+      include: tasks/create_template.yml
+      when: tipo == "distribuido"
+      tags: console
+
+    - name: Aplicar template na segunda instancia
+      include: tasks/apply_template.yml
+      tags: node
+
+    - name: Redefine permissoes a partir de {{ wls_home }}
+      include: tasks/setup_permissions.yml
+      tags: always
+
+    - name: Remove arquivos de instalacao
+      file: path={{ wls_download_path }} state=absent
+      tags: always
+
+    - name: Remove arquivo de template gerado localmente
+      local_action:
+        module: file
+        path: "files/template_{{ wls_domain_name }}.jar"
+        state: absent
+      tags: node
+      become: false
+      ignore_errors: True
+

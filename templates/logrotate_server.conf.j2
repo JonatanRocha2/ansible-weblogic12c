@@ -1,0 +1,10 @@
+{{ wls_home }}/user_projects/domains/*.sefa.pa.gov.br/*/*/logs/*.log
+{{ wls_home }}/user_projects/domains/*.sefa.pa.gov.br/*/*/logs/*.out {
+        daily
+        missingok
+        copytruncate
+        compress
+        dateext
+        rotate 30
+        notifempty
+}

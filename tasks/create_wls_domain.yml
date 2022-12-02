@@ -1,0 +1,31 @@
+---
+- name: Copia os scripts
+  template: src=templates/{{ item.src }}
+            dest="{{ wls_download_path }}/{{ item.dest }}"
+            owner={{ wls_user }} group={{ wls_group }}
+            mode=0750
+  with_items:
+    - { src: 'create_wls_domain.py.j2', dest: 'create_wls_domain.py' }
+    - { src: 'nodemanager_enroll.py.j2', dest: 'nodemanager_enroll.py' }
+
+- name: Cria o dominio no WLS
+  shell: "{{ wls_cmd_tool }} -skipWLSModuleScanning {{ wls_download_path }}/create_wls_domain.py"
+  become: true
+  become_user: "{{ wls_user }}"
+
+- name: Cria o diretorio de security no AdminServer
+  file: path={{ wls_domain_home }}/servers/AdminServer/security state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: Copia o arquivo boot.properties para o Admin Server
+  template: src=templates/boot.properties.j2
+            dest={{ wls_domain_home }}/servers/AdminServer/security/boot.properties
+            owner={{ wls_user }} group={{ wls_group }} mode=0640
+
+- name: Copia o script setUserOverrides.sh
+  template: src=templates/{{ item.src }}
+            dest="{{ wls_domain_home }}/bin/{{ item.dest }}"
+            owner={{ wls_user }} group={{ wls_group }}
+            mode=0750
+  with_items:
+    - { src: 'setUserOverrides.sh.j2', dest: 'setUserOverrides.sh' }

@@ -1,0 +1,6 @@
+connect('{{ wls_console_user }}','{{ wls_password }}','t3://{{ wls_console_host }}:{{ wls_console_port }}')
+
+nmEnroll('{{ wls_domain_home }}','{{ wls_domain_home }}/nodemanager')
+
+disconnect()
+exit()

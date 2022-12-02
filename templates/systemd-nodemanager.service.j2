@@ -1,0 +1,15 @@
+[Unit]
+Description=WebLogic nodemanager service
+
+[Service]
+Type=simple
+WorkingDirectory={{ wls_domain_home }}/bin
+ExecStart={{ wls_domain_home }}/bin/startNodeManager.sh
+ExecStop={{ wls_domain_home }}/bin/stopNodeManager.sh
+User=oracle
+Group=oinstall
+KillMode=process
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+---
+# - name: 2.1.Configura parametros de kernel
+#   sysctl: name={{ item.key }} value={{ item.value }} state=present
+#   with_dict: "{{ kernel_params }}"
+
+# - name: 2.2.Configura limites do kernel
+#   template: src=templates/etc_security_limits.d_99-oracle_weblogic.conf.j2
+#             dest=/etc/security/limits.d/99-oracle_weblogic.conf
+#             owner=root group=root mode=0644
+
+# - name: 2.3.Configura variaveis de ambiente
+#   template: src=templates/etc_profile.d_weblogic_env_vars.sh.j2
+#             dest=/etc/profile.d/weblogic_env_vars.sh
+#             owner={{ wls_user }} group={{ wls_group }} mode=0644
+
+- name: 2.3.1.Cria a home do usuario {{ wls_user }}
+  shell: mkhomedir_helper {{ wls_user }} 0077
+
+# - name: 2.3.2 Copia template do motd para o alvo
+#   template: src=templates/{{ item.src }}
+#             dest='{{ motd_script_path }}/{{ item.dest }}'
+#   with_items:
+#       - { src: 'motd.sh.j2', dest: motd.sh }

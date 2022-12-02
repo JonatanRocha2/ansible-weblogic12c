@@ -1,0 +1,19 @@
+#
+# Inicializa as variaveis de ambiente globais para facilitar as operacoes
+#
+
+export WLS_DOMAIN_NAME={{ wls_domain_name }}
+
+export WEBLOGIC_ROOT_DIR="{{ wls_domain_home }}/servers"
+export WEBLOGIC_START_NODEMANAGER="{{ wls_domain_home }}/bin/startNodeManager.sh"
+export WEBLOGIC_STOP_NODEMANAGER="{{ wls_domain_home }}/bin/stopNodeManager.sh"
+
+export JAVA_HOME={{ java_home }}
+export ORACLE_HOME={{ wls_home }}
+export MW_HOME=${ORACLE_HOME}
+export WLS_HOME=${ORACLE_HOME}/wlserver
+export WL_HOME=${WLS_HOME}
+export DOMAIN_HOME=${ORACLE_HOME}/user_projects/domains/${WLS_DOMAIN_NAME}
+export SERVERS=${DOMAIN_HOME}/servers
+
+export PATH=$ORACLE_HOME/oracle_common/common/bin:$DOMAIN_HOME/bin:$PATH

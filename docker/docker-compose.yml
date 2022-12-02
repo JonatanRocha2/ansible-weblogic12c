@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  weblogic12c:
+    build: .
+    container_name: 'admin-console'
+    ports:
+      - '22'
+      - '7001'

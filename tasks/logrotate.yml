@@ -1,0 +1,23 @@
+---
+- name: Cria o diretorio scripts
+  file: path="/u02/scripts" state=directory
+        owner={{ wls_user }} group={{ wls_group }} mode=0755
+
+- name: Cria o arquivo logrotate.status
+  file: path="/var/tmp/logrotate.status" state=touch
+        owner={{ wls_user }} group={{ wls_group }} mode=0644
+
+- name: Copia os arquivos necessarios
+  copy: src="templates/{{ item.src }}"
+        dest="/u02/scripts/{{ item.dest }}"
+        owner={{ wls_user }} group={{ wls_group }}
+        mode="u=rwx,g=rwx,o="
+  with_items:
+    - { src: 'compacta_log_crontab.sh.j2', dest: 'compacta_log_crontab.sh' }
+    - { src: 'logrotate_server.conf.j2', dest: 'logrotate_server.conf' }
+
+- name: Adiciona o script na cron
+  cron: name="Compacta o logs das aplicacoes e managed servers - Jose Roberto"
+        hour=0 minute=0 day="*" month="*" weekday="*"
+        job="/u02/scripts/compacta_log_crontab.sh > /dev/null"
+        user=oracle state=present

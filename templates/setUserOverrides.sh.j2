@@ -1,0 +1,16 @@
+case $SERVER_NAME in
+        AdminServer)
+                USER_MEM_ARGS="-Xms512m -Xmx2G -Xss256k -XX:MaxPermSize=256m"
+                export USER_MEM_ARGS;;
+        Server-2)
+                JAVA_HOME="/u01/jdk1.8.0_91"
+                USER_MEM_ARGS=" "
+                export JAVA_HOME
+                export USER_MEM_ARGS;;
+        *)
+                USER_MEM_ARGS=" "
+                export USER_MEM_ARGS;;
+esac
+
+JAVA_OPTIONS="-Djava.net.preferIPv4Stack=true $JAVA_OPTIONS"
+export JAVA_OPTIONS

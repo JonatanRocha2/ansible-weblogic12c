@@ -1,0 +1,29 @@
+#!/bin/bash
+# Objetivo: Realizar o rotate dos logs dos managed servers 
+# Compactar os logs das aplicacoes diariamente (u02)
+# Agrupa os logs das aplicacoes por mes todo primeiro dia do mes (u02).
+
+log_dir=/u02/logs
+apps=$(ls -d ${log_dir}/* |cut -d "/" -f4)
+mes_passado=$(date --date='last month' +%Y-%m)
+dia_anterior=$(date --date='last day' +%Y-%m-%d)
+
+# Realiza o rotate dos logs dos managed servers diariamente
+/usr/sbin/logrotate -f -s /var/tmp/logrotate.status /u02/scripts/logrotate_server.conf
+
+# Todo dia compacta os logs das aplicacoes e no dia 01 agrupa o do mês
+if [ $(date +%d) -eq 01 ]; then
+	for app in $apps
+	do
+		#Compacta o log do dia anterior
+		find ${log_dir}/${app} -name "*.${dia_anterior}" -execdir tar --remove-files -cvzf ${app}.${dia_anterior}.tar.gz {} +;
+		#Compacta e agrupa por mês
+		find ${log_dir}/${app} -name "*.${mes_passado}-*" -execdir tar --remove-files -cvzf ${app}.${mes_passado}.tar.gz {} +;
+	done
+else
+	for app in $apps
+	do
+		#Compacta o log do dia anterior
+		find ${log_dir}/${app} -name "*.${dia_anterior}" -execdir tar --remove-files -cvzf ${app}.${dia_anterior}.tar.gz {} +;
+	done
+fi

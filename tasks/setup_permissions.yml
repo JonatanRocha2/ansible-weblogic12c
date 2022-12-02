@@ -1,0 +1,19 @@
+---
+- name: Cria a pasta servers
+  file: path="{{ wls_domain_home }}/servers" state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+
+- name: Adiciona bit de execucao para outros ate o diretorio {{wls_domain_home}}
+  file: path={{ item }} mode=o+x
+  with_items:
+    - "{{ wls_home }}/user_projects/"
+    - "{{ wls_home }}/user_projects/domains/"
+    - "{{ wls_domain_home }}"
+
+- name: Altera grupo a partir de {{wls_domain_home}}/servers para {{ipa_acl_usergroup}}
+  file: path="{{ wls_domain_home }}/servers" recurse=yes
+        group={{ ipa_acl_usergroup }}
+  ignore_errors: True
+
+- name: Adiciona bit Setgid para diretorios abaixo de {{wls_domain_home}}/servers/
+  shell: find "{{ wls_domain_home }}/servers" -type d -exec chmod 2750 {} +

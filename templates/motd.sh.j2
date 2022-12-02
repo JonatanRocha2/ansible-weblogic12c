@@ -1,0 +1,38 @@
+#! /bin/bash
+
+# Basic info
+HOSTNAME=`uname -n`
+SWAP=`free -m | tail -n 1 | awk '{print $3" MB";}'`
+SWAP2=`free -m | tail -n 1 | awk '{print $3}'`
+MEMORY1=`free -t -m | grep Total | awk '{print $3" MB";}'`
+MEMORY2=`free -t -m | grep Total | awk '{print $3}'`
+MEMORY_TOTAL=`free -t -m | grep "Mem" | awk '{print $2" MB";}'`
+MEMORY_USED=`echo $(($MEMORY2-$SWAP2)) MB`
+LOAD1=`cat /proc/loadavg | awk {'print $1'}`
+LOAD5=`cat /proc/loadavg | awk {'print $2'}`
+LOAD15=`cat /proc/loadavg | awk {'print $3'}`
+upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
+secs=$((${upSeconds}%60))
+mins=$((${upSeconds}/60%60))
+hours=$((${upSeconds}/3600%24))
+days=$((${upSeconds}/86400))
+UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
+IPADDRESS=`ip a | grep glo | awk '{print $2}' | head -1 | cut -f1 -d/`
+OS=`cat /etc/system-release`
+#QTD_CPU=`lscpu | grep  'CPU(s)' | grep -vE NUMA\|list | awk '{print $2}'`
+QTD_CPU=`getconf _NPROCESSORS_ONLN`
+
+echo "
+`date +"%A, %e %B %Y, %r"`
+===============================================
+
+  ____  _____ _____ _        OS:.................: $OS
+ / ___|| ____|  ___/ \       Uptime..............: $UPTIME
+ \___ \|  _| | |_ / _ \      IP Address..........: $IPADDRESS
+  ___) | |___|  _/ ___ \     CPUs................: $QTD_CPU
+ |____/|_____|_|/_/   \_\    CPU usage...........: $LOAD1, $LOAD5, $LOAD15 (1, 5, 15 min)
+                             Memory used.........: $MEMORY_USED / $MEMORY_TOTAL
+                             Swap in use.........: $SWAP
+
+===============================================
+"

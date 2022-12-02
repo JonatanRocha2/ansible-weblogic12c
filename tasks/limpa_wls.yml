@@ -1,0 +1,15 @@
+---
+# - name: Para Node Manager
+#   shell: "{{ wls_stop_nodemanager }}"
+#   become: true
+#   become_user: "{{ wls_user }}"
+#   ignore_errors: True
+
+# - name: Para Weblogic
+#   shell: "{{ wls_stop_weblogic }}"
+#   become: true
+#   become_user: "{{ wls_user }}"
+#   ignore_errors: True
+
+- name: Limpa Weblogic
+  file: path={{ wls_home }} state=absent

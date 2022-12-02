@@ -1,0 +1,58 @@
+---
+- name: Copia os scripts
+  template: src=templates/{{ item.src }}
+            dest="{{ wls_download_path }}/{{ item.dest }}"
+            owner={{ wls_user }} group={{ wls_group }}
+            mode=0750
+  with_items:
+    - { src: 'config_wls_ad.py.j2',        dest: 'config_wls_ad.py' }
+    - { src: 'config_wls_ad_grupos.py.j2',  dest: 'config_wls_ad_grupos.py' }
+    - { src: 'config_wls_servers.py.j2',    dest: 'config_wls_servers.py' }
+
+- name: Verifica o processo da console
+  shell: /bin/ps -ef |grep -v grep |grep -c startWebLogic
+  register: status_wls_console
+  ignore_errors: True
+
+- name: Inicia Weblogic
+  shell: "{{ wls_start_weblogic }}"
+  async: 1000
+  poll: 0
+  become: yes
+  become_user: "{{ wls_user }}"
+  #when: status_wls_console == 0
+
+- name: Aguarda até o WLS estar pronto para conexão
+  wait_for: host={{ wls_console_host }}
+            port={{ wls_console_port }}
+            delay=60
+
+- name: Configura AdminServer, Machine e Templates
+  shell: "{{ wls_cmd_tool }} -skipWLSModuleScanning {{ wls_download_path }}/config_wls_servers.py"
+  become: true
+  become_user: "{{ wls_user }}"
+  ignore_errors: True
+
+- name: Configura integração AD
+  shell: "{{ wls_cmd_tool }} -skipWLSModuleScanning {{ wls_download_path }}/config_wls_ad.py"
+  become: true
+  become_user: "{{ wls_user }}"
+  ignore_errors: True
+
+- name: Inicia Weblogic server
+  shell: "{{ wls_start_weblogic }}"
+  async: 1000
+  poll: 0
+  become: true
+  become_user: "{{ wls_user }}"
+
+- name: Aguarda até o WLS estar pronto para conexão
+  wait_for: host={{ wls_console_host }}
+            port={{ wls_console_port }}
+            delay=60
+
+- name: Configura as roles dos grupos do AD
+  shell: "{{ wls_cmd_tool }} -skipWLSModuleScanning {{ wls_download_path }}/config_wls_ad_grupos.py"
+  become: true
+  become_user: "{{ wls_user }}"
+  ignore_errors: True

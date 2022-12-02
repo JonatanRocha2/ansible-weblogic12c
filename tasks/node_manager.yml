@@ -1,0 +1,34 @@
+---
+- name: Inicia Weblogic Server
+  command: "{{ wls_start_weblogic }}"
+  async: 1000
+  poll: 0
+  become: true
+  become_user: "{{ wls_user }}"
+
+- name: Aguarda até o WLS estar pronto para conexão
+  wait_for: host={{ wls_console_host }}
+            port={{ wls_console_port }}
+            delay=60
+
+- name: Cria a pasta security no home do Node Manager
+  file: path="{{ wls_domain_home }}/nodemanager/security"
+        state=directory
+        owner={{ wls_user }} group={{ wls_group }}
+        mode=0750 recurse=yes
+
+- name: Copia a chave de segurança do Node Manager
+  copy: src="{{ wls_domain_home }}/security/DemoIdentity.jks"
+        dest="{{ wls_domain_home }}/nodemanager/security/DemoIdentity.jks"
+        owner={{ wls_user }} group={{ wls_group }} mode=0640
+        remote_src=True
+
+- name: NodeManager enrollment
+  shell: "{{ wls_cmd_tool }} -skipWLSModuleScanning {{ wls_download_path }}/nodemanager_enroll.py"
+  become: true
+  become_user: "{{ wls_user }}"
+
+- name: Copia o arquivo nodemanager.properties
+  template: src=templates/nodemanager.properties.j2
+            dest={{ wls_domain_home }}/nodemanager/nodemanager.properties
+            owner={{ wls_user }} group={{ wls_group }} mode=0640 force=true

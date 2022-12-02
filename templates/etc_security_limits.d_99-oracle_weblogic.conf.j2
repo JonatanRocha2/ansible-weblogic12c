@@ -1,0 +1,6 @@
+# Limites de numero de arquivos e processos para o usuario {{ wls_user }}
+
+{{ wls_user }} soft nofile {{ limits_soft_nofile }}
+{{ wls_user }} hard nofile {{ limits_hard_nofile }}
+{{ wls_user }} soft nproc  {{ limits_soft_nproc }}
+{{ wls_user }} hard nproc  {{ limits_hard_nproc }}

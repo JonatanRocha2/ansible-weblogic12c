@@ -1,0 +1,35 @@
+#
+# Docs: https://docs.oracle.com/cd/E13222_01/wls/docs92/config_scripting/domains.html
+#
+
+
+# Open default domain template
+readTemplate("{{ wls_home }}/wlserver/common/templates/wls/wls.jar")
+
+# Set the listen address and listen port for the Administration Server
+cd('Servers/AdminServer')
+
+set('ListenAddress','{{ wls_console_host }}')
+set('ListenPort', {{ wls_console_port }})
+
+# Enable SSL on the Administration Server and set the SSL listen address and
+# port
+create('AdminServer','SSL')
+cd('SSL/AdminServer')
+set('Enabled', 'True')
+set('ListenPort', 7002)
+
+# Set the domain password for the WebLogic Server administration user
+cd('/')
+cd('Security/base_domain/User/weblogic')
+cmo.setPassword('{{ wls_password }}')
+
+# If the domain already exists, overwrite the domain
+setOption('ServerStartMode', 'prod')
+setOption('OverwriteDomain', 'true')
+
+# write the domain and close the templates
+writeDomain('{{ wls_domain_home }}')
+closeTemplate()
+
+exit()
